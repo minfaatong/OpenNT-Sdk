@@ -153,7 +153,7 @@ typedef unsigned long POINTER_64_INT;
 
 // begin_winnt
 
-#if (defined(_M_IX86) || defined(_M_IA64) || defined(_M_AMD64)) && !defined(MIDL_PASS)
+#if (defined(_M_MRX000) || defined(_M_IX86) || defined(_M_ALPHA) || defined(_M_PPC) || defined(_M_IA64) || defined(_M_AMD64)) && !defined(MIDL_PASS)
 #define DECLSPEC_IMPORT __declspec(dllimport)
 #else
 #define DECLSPEC_IMPORT
@@ -789,6 +789,70 @@ typedef LARGE_INTEGER PHYSICAL_ADDRESS, *PPHYSICAL_ADDRESS;
 #define Int64ShraMod32(a, b) ((LONGLONG)(a) >> (b))
 #define Int64ShrlMod32(a, b) ((ULONGLONG)(a) >> (b))
 
+#elif defined(_M_MRX000)
+
+//
+// MIPS uses intrinsic functions to perform shifts by 0..31 and multiplies of
+// 32-bits times 32-bits to 64-bits.
+//
+
+#define Int32x32To64 __emul
+#define UInt32x32To64 __emulu
+
+#define Int64ShllMod32 __ll_lshift
+#define Int64ShraMod32 __ll_rshift
+#define Int64ShrlMod32 __ull_rshift
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
+LONGLONG
+NTAPI
+Int32x32To64 (
+    LONG Multiplier,
+    LONG Multiplicand
+    );
+
+ULONGLONG
+NTAPI
+UInt32x32To64 (
+    ULONG Multiplier,
+    ULONG Multiplicand
+    );
+
+ULONGLONG
+NTAPI
+Int64ShllMod32 (
+    ULONGLONG Value,
+    ULONG ShiftCount
+    );
+
+LONGLONG
+NTAPI
+Int64ShraMod32 (
+    LONGLONG Value,
+    ULONG ShiftCount
+    );
+
+ULONGLONG
+NTAPI
+Int64ShrlMod32 (
+    ULONGLONG Value,
+    ULONG ShiftCount
+    );
+
+#if defined (__cplusplus)
+};
+#endif
+
+#pragma intrinsic(__emul)
+#pragma intrinsic(__emulu)
+
+#pragma intrinsic(__ll_lshift)
+#pragma intrinsic(__ll_rshift)
+#pragma intrinsic(__ull_rshift)
+
 #elif defined(_M_IX86)
 
 //
@@ -881,7 +945,7 @@ Int64ShrlMod32 (
 #pragma warning(default:4035)
 #endif
 
-#elif defined(_68K_) || defined(_MPPC_)
+#elif defined(_M_ALPHA) || defined(_68K_) || defined(_MPPC_)
 
 //
 // The Macintosh 68K and PowerPC compilers do not currently support int64.
